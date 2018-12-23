@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Crytocurrency</title>
+		<style type="text/css">
+			table {
+				border-collapse: collapse;
+			}
+			th, td {
+				border-style: solid;
+				padding: .5em;
+			}
+		</style>
+		<script type="text/javascript" id="trivial_solution_source">
+			function trivial_solution(dataset) {
+				var result = 0;
+				var j = dataset.length;
+				var i_outer = 0;
+				var i_inner;
+				var i_min;
+				var i_max;
+				while (i_outer < j) {
+					i_inner = i_outer;
+					while (i_inner < j) {
+						if (dataset[i_inner] - dataset[i_outer] > result) {
+							i_min = i_outer;
+							i_max = i_inner;
+							result = dataset[i_inner] - dataset[i_outer];
+						}
+						++ i_inner;
+					}
+					++ i_outer;
+				}
+				console.debug('%s resulted in %d (buy[%d] = %d, sell [%d] = %d)', 'trivial_solution', result, i_min, dataset [i_min], i_max, dataset [i_max]);
+				return result;
+			}
+		</script>
+		<script type="text/javascript" id="better_solution_source">
+			function better_solution(dataset) {
+				var result = 0;
+				var j = dataset.length;
+				var i = j - 1;
+				var maxium_from_now_on = []
+				var index_of_maximum_from_now_on = j - 1;
+				var profit;
+				var i_min;
+				var i_max;
+				maxium_from_now_on [index_of_maximum_from_now_on] = index_of_maximum_from_now_on;
+				do {
+					-- i;
+					if (dataset [i] >= dataset [index_of_maximum_from_now_on]) {
+						index_of_maximum_from_now_on = i;
+					}
+					maxium_from_now_on [i] = index_of_maximum_from_now_on;
+				} while (i > 0);
+				i = 0;
+				while (i < j) {
+					profit = dataset [maxium_from_now_on[i]] - dataset [i];
+					if (profit > result) {
+						i_min = i;
+						i_max = maxium_from_now_on[i];
+						result = profit;
+					}
+					++ i;
+				}
+				console.debug('%s resulted in %d (buy[%d] = %d, sell [%d] = %d)', 'better_solution', result, i_min, dataset [i_min], i_max, dataset [i_max]);
+				return result;
+			}
+		</script>
+		<script type="text/javascript">
+			function fill_sources() {
+				document.getElementById('trivial_solution_data').textContent = document.getElementById('trivial_solution_source').textContent;
+				document.getElementById('better_solution_data').innerHTML = document.getElementById('better_solution_source').innerHTML;
+			}
+			function create_random_array(min, max, count) {
+				result = [];
+				while(count) {
+					result.push(Math.round(min + Math.random() * (max - min)));
+					-- count;
+				}
+				return result;
+			}
+			function test_dataset(test_no, dataset) {
+				var t0 = Date.now();
+				result_trivial = trivial_solution(dataset);
+				var t1 = Date.now();
+				result_better = better_solution(dataset);
+				var t2 = Date.now();
+				var result_trivial, result_better;
+				if (result_trivial === result_better) {
+					console.info("%d resulted in success (%d) in %.1f%% of the time", test_no, result_trivial, 100 * (t2 - t1) / (t1 - t0));
+				} else {
+					console.error("%d resulted in FAILURE (%d, %d)", test_no, result_trivial, result_better);
+				}
+			}
+			function test_random(test_no, min, max, count) {
+				var dataset = create_random_array(test_no, min, max, count);
+				return test_dataset(test_no, dataset);
+			}
+			function test() {
+				var dataset;
+				var test_no = 1;
+				var i, j;
+				while (true) {
+					dataset = document.getElementById('dataset' + test_no);
+					if (!dataset) {
+						 return;
+					}
+					dataset = dataset
+						.innerText
+						.trim().split(/ +/)
+						.filter(item => !Number.isNaN(item));
+					test_dataset(test_no, dataset);
+					++ test_no;
+				}
+			}
+		</script>
+	</head>
+	<body onload="javascript:fill_sources();">
+		<h2>Cryptocurrency</h2>
+		<p>Given cryptocurrency prices over last N days e.g.: 25, 30, 48, 15,
+			25, 45, 10, 25. Write the function that returns the maximum profit
+			that can be made with a single buy-sell transaction (note: you
+			need to buy criptocurrency first before you can sell it). If no
+			profit can be made, return 0.
+		</p>
+		<p>In the example, price of cryptocurrency on day #4 was 15, and price
+			on day #6 was 45, which means yo coud've made profit 30 if you
+			bought cryptocurrency on day #4 and sold on day #6.
+		</p>
+		<p>
+			Note: these prices are neither minimum (minimum price on day #7 and
+			was 10), nor maximum (maximum price occurred on day #3 and was 48).
+		</p>
+		<p>While there's an obvious O(N^2) solution, please provide O(N)
+			solution.
+		</p>
+		<button onclick="javascript:test();">test</button>
+		<button onclick="javascript:test_random(10, 100, 1024);">test 10 100 1024</button>
+		<button onclick="javascript:test_random(10, 100, 2048);">test 10 100 2048</button>
+		<button onclick="javascript:test_random(10, 100, 4096);">test 10 100 4096</button>
+		<button onclick="javascript:test_random(10, 100, 8192);">test 10 100 8192</button>
+		<button onclick="javascript:test_random(10, 100, 16384);">test 10 100 16384</button>
+		<h2>Sample Input/Output</h2>
+		<table>
+			<thead>
+				<th></th><th>Input data</th><th>Output data</th>
+			</thead>
+			<tr>
+				<td id="test1">1</td><td id="dataset1">10 20 30 40 50</td><td id="solution1">40</td>
+			</tr>
+			<tr>
+				<td id="test2">2</td><td id="dataset2">23 55 67 22 40 65 44 20</td><td id="solution1">44</td>
+			</tr>
+		</table>
+		<div id="trivial_solution">
+			<pre><code id="trivial_solution_data">
+			</code></pre>
+		</div>
+		<div id="better_solution">
+			<pre><code id="better_solution_data">
+			</code></pre>
+		</div>
+	</body>
+<hmtl>
