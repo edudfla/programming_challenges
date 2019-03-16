@@ -19,27 +19,35 @@
 				var i_outer = 0;
 				var i_inner;
 				var overlapping;
-				var s;
 				var ba, ea;
 				var bb, eb;
+				var s;
 				while (i_outer < j) {
-					i_inner = i_outer;
-					overlapping = 0;
 					ba = dataset[i_outer].begin;
 					ea = dataset[i_outer].end;
-					s = "" + ba + "," + ea + ": ";
-					while (i_inner < j) {
-						bb = dataset[i_inner].begin;
-						eb = dataset[i_inner].end;
-						if (bb < eb && ba < eb && ea > bb) {
-							s += "" + dataset[i_inner].begin + "," + dataset[i_inner].end + ", ";
-							overlapping ++;
+					if (ba < ea) {
+						s = "" + ba + "," + ea + ": ";
+						i_inner = 0;
+						overlapping = 0;
+						while (i_inner < j) {
+							bb = dataset[i_inner].begin;
+							eb = dataset[i_inner].end;
+							if (bb < eb && ba < eb && ea > bb) {
+								overlapping ++;
+								s += bb + "," + eb + "| ";
+								if (ba < bb) {
+									ba = bb;
+								}
+								if (ea > eb) {
+									ea = eb;
+								}
+							}
+							++ i_inner;
 						}
-						++ i_inner;
-					}
-					console.log(s);
-					if (overlapping > result) {
-						result = overlapping;
+						console.log(s);
+						if (overlapping > result) {
+							result = overlapping;
+						}
 					}
 					++ i_outer;
 				}
@@ -49,35 +57,50 @@
 		</script>
 		<script type="text/javascript" id="better_solution_source">
 			function better_solution(dataset) {
-				var result = 0;
 				var j = dataset.length;
 				var i = 0;
-				var k;
-				var begins_and_ends = {};
+				var beginnings = {};
+				var endings = {};
+				var bounds = {};
+				var lower_bound;
+				var upper_bound;
 				while (i < j) {
-					if (isNaN(begins_and_ends[dataset[i].begin])) {
-						begins_and_ends[dataset[i].begin] = 0;
+					lower_bound = dataset[i].begin;
+					upper_bound =  dataset[i].end;
+					if (lower_bound < upper_bound) {
+						bounds[lower_bound] = 0;
+						bounds[upper_bound] = 0;
+						if (isNaN(beginnings[lower_bound])) {
+							beginnings[lower_bound] = 0;
+						}
+						beginnings[lower_bound] ++;
+						if (isNaN(endings[upper_bound])) {
+							endings[upper_bound] = 0;
+						}
+						endings[upper_bound] ++;
 					}
-					begins_and_ends[dataset[i].begin] ++;
-					if (isNaN(begins_and_ends[dataset[i].end])) {
-						begins_and_ends[dataset[i].end] = 0;
-					}
-					begins_and_ends[dataset[i].end] --;
 					++ i;
 				}
-				var begins_and_ends_limits = [];
-				for (var limit in begins_and_ends) {
-					begins_and_ends_limits.push(parseInt(limit));
+				var sorted_bounds = [];
+				var numeric_bound;
+				for (var bound in bounds) {
+					numeric_bound = parseInt(bound);
+					sorted_bounds.push(numeric_bound);
+					if (isNaN(parseInt(beginnings[numeric_bound]))) {
+						beginnings[numeric_bound] = 0;
+					}
+					if (isNaN(parseInt(endings[numeric_bound]))) {
+						endings[numeric_bound] = 0;
+					}
 				}
-				begins_and_ends_limits.sort(function(a, b) {return a - b;});
-				j = begins_and_ends_limits.length;
+				sorted_bounds.sort(function(a, b) {return a - b;});
+				j = sorted_bounds.length;
 				i = 0;
 				var overlapping = 0;
-				console.log("begins_and_ends = " + JSON.stringify(begins_and_ends));
-				console.log("begins_and_ends_limits = " + JSON.stringify(begins_and_ends_limits));
+				var result = 0;
 				while (i < j) {
-					k = begins_and_ends_limits[i];
-					overlapping += begins_and_ends[k];
+					overlapping += beginnings[sorted_bounds[i]];
+					overlapping -= endings[sorted_bounds[i]];
 					if (overlapping > result) {
 						result = overlapping;
 					}
@@ -103,8 +126,14 @@
 				}
 				return result;
 			}
-			function test_dataset(test_no, dataset) {
+			function test_dataset(clicked_button, test_no, dataset) {
 				console.log("dataset = " + JSON.stringify(dataset));
+				dataset.sort(function(a, b) {
+					if (a.begin !== b.begin) {
+						return a.begin - b.begin;
+					}
+					return a.end - b.end;
+				})
 				var t0 = Date.now();
 				result_trivial = trivial_solution(dataset);
 				var t1 = Date.now();
@@ -113,13 +142,59 @@
 				var result_trivial, result_better;
 				if (result_trivial === result_better) {
 					console.info("%d resulted in success (%d) in %.1f%% of the time", test_no, result_trivial, 100 * (t2 - t1) / (t1 - t0));
+					if (true === document.getElementById("loop_until_failure").checked) {
+						window.setTimeout((function(cb) {
+							return function() {
+								cb.click();
+							}
+						})(clicked_button), 100);
+					}
 				} else {
 					console.error("%d resulted in FAILURE (%d, %d)", test_no, result_trivial, result_better);
 				}
 			}
-			function test_random(test_no, min, max, count) {
+			function test_random(clicked_button, test_no, min, max, count) {
+				window.console.clear();
 				var dataset = create_random_array(test_no, min, max, count);
-				return test_dataset(test_no, dataset);
+				return test_dataset(clicked_button, test_no, dataset);
+			}
+			function test_2(clicked_button) {
+				window.console.clear();
+				var tests = document.getElementById('tests').getElementsByTagName('tr');
+				var i = 1;
+				var j = tests.length;
+				var test;
+				var test_no, test_input, test_output;
+				var va, vb;
+				var dataset;
+				var ii, jj;
+				while (i < j) {
+					test = tests.item(i);
+					test_no = test.childNodes.item(1).innerText;
+					test_input = test
+						.childNodes
+						.item(2)
+						.innerText
+						.trim()
+						.split(/[^0-9]+/)
+						.filter(item => !isNaN(item));
+					test_output = parseInt(test.childNodes.item(3).innerText);
+					console.log("test_no = %d, test_input = %s, test_output = %d", test_input, JSON.stringify(test_input), test_output);
+					dataset = [];
+					ii = 1;
+					jj = test_input.length;
+					while (ii < jj) {
+						va = parseInt(test_input[ii]);
+						vb = parseInt(test_input[ii + 1]);
+						dataset.push(
+							va < vb ?
+							{begin: va, end: vb} :
+							{begin: vb, end: va});
+						ii += 2;
+					}
+					test_dataset(clicked_button, test_no, dataset);
+					++ i;
+				}
 			}
 			function test() {
 				var temp_dataset;
@@ -158,15 +233,18 @@
 		<h2>Cryptocurrency</h2>
 		<p>Given a set of intervals, calculate the maximum number of overlapping intervals.
 		</p>
-		<button onclick="javascript:test();">test</button>
-		<button onclick="javascript:test_random(1, 10, 8);">test 1 10 8</button>
-		<button onclick="javascript:test_random(0, 1000000, 1024);">test 0 1000000 1024</button>
-		<button onclick="javascript:test_random(0, 1000000, 2048);">test 0 1000000 2048</button>
-		<button onclick="javascript:test_random(0, 1000000, 4096);">test 0 1000000 4096</button>
-		<button onclick="javascript:test_random(0, 1000000, 8192);">test 0 1000000 8192</button>
-		<button onclick="javascript:test_random(0, 1000000, 16384);">test 0 1000000 16384</button>
+		<button onclick="javascript:test_2(this);">test</button>
+		<button onclick="javascript:test_random(this, 1, 10, 8);">test 1 10 8</button><label for="loop_until_failure"><input id="loop_until_failure" type="checkbox">loop_until_failure<input</label>
+		<button onclick="javascript:test_random(this, 0, 20, 8);">test 0 20 8</button>
+		<button onclick="javascript:test_random(this, 0, 20, 16);">test 0 20 16</button>
+		<button onclick="javascript:test_random(this, 0, 40, 32);">test 0 40 32</button>
+		<button onclick="javascript:test_random(this, 0, 1000000, 1024);">test 0 1000000 1024</button>
+		<button onclick="javascript:test_random(this, 0, 1000000, 2048);">test 0 1000000 2048</button>
+		<button onclick="javascript:test_random(this, 0, 1000000, 4096);">test 0 1000000 4096</button>
+		<button onclick="javascript:test_random(this, 0, 1000000, 8192);">test 0 1000000 8192</button>
+		<button onclick="javascript:test_random(this, 0, 1000000, 16384);">test 0 1000000 16384</button>
 		<h2>Sample Input/Output</h2>
-		<table>
+		<table id="tests">
 			<thead>
 				<th></th><th>Input data</th><th>Output data</th>
 			</thead>
@@ -181,6 +259,9 @@
 			</tr>
 			<tr>
 				<td id="test4">4</td><td id="dataset4">[{1,1},{2,7},{6,8},{3,3},{6,10},{7,9},{4,8},{3,8}]</td><td id="solution4">5</td>
+			</tr>
+			<tr>
+				<td id="test4">5</td><td id="dataset4">[{2,9},{3,9},{3,4},{2,7},{2,3},{6,9},{4,7},{3,9}]</td><td id="solution4">6</td>
 			</tr>
 		</table>
 		<div id="trivial_solution">
