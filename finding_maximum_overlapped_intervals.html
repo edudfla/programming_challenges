@@ -21,12 +21,12 @@
 				var overlapping;
 				var ba, ea;
 				var bb, eb;
-				var s;
+				//var s;
 				while (i_outer < j) {
 					ba = dataset[i_outer].begin;
 					ea = dataset[i_outer].end;
 					if (ba < ea) {
-						s = "" + ba + "," + ea + ": ";
+				//		s = "" + ba + "," + ea + ": ";
 						i_inner = 0;
 						overlapping = 0;
 						while (i_inner < j) {
@@ -34,7 +34,7 @@
 							eb = dataset[i_inner].end;
 							if (bb < eb && ba < eb && ea > bb) {
 								overlapping ++;
-								s += bb + "," + eb + "| ";
+				//				s += bb + "," + eb + "| ";
 								if (ba < bb) {
 									ba = bb;
 								}
@@ -44,14 +44,14 @@
 							}
 							++ i_inner;
 						}
-						console.log(s);
+				//		console.log(s);
 						if (overlapping > result) {
 							result = overlapping;
 						}
 					}
 					++ i_outer;
 				}
-				console.debug('%s resulted in %d', 'trivial_solution', result);
+				//console.debug('%s resulted in %d', 'trivial_solution', result);
 				return result;
 			}
 		</script>
@@ -106,7 +106,7 @@
 					}
 					++ i;
 				}
-				console.debug('%s resulted in %d', 'better_solution', result);
+				//console.debug('%s resulted in %d', 'better_solution', result);
 				return result;
 			}
 		</script>
@@ -127,7 +127,7 @@
 				return result;
 			}
 			function test_dataset(clicked_button, test_no, dataset) {
-				console.log("dataset = " + JSON.stringify(dataset));
+				//console.log("dataset = " + JSON.stringify(dataset));
 				dataset.sort(function(a, b) {
 					if (a.begin !== b.begin) {
 						return a.begin - b.begin;
@@ -141,7 +141,7 @@
 				var t2 = Date.now();
 				var result_trivial, result_better;
 				if (result_trivial === result_better) {
-					console.info("%d resulted in success (%d) in %.1f%% of the time", test_no, result_trivial, 100 * (t2 - t1) / (t1 - t0));
+					console.info("%s resulted in success (%d) in %.1f%% of the time", test_no, result_trivial, 100 * (t2 - t1) / (t1 - t0));
 					if (true === document.getElementById("loop_until_failure").checked) {
 						window.setTimeout((function(cb) {
 							return function() {
@@ -154,12 +154,12 @@
 				}
 			}
 			function test_random(clicked_button, test_no, min, max, count) {
-				window.console.clear();
-				var dataset = create_random_array(test_no, min, max, count);
+				//window.console.clear();
+				var dataset = create_random_array(min, max, count);
 				return test_dataset(clicked_button, test_no, dataset);
 			}
 			function test_2(clicked_button) {
-				window.console.clear();
+				//window.console.clear();
 				var tests = document.getElementById('tests').getElementsByTagName('tr');
 				var i = 1;
 				var j = tests.length;
@@ -234,15 +234,15 @@
 		<p>Given a set of intervals, calculate the maximum number of overlapping intervals.
 		</p>
 		<button onclick="javascript:test_2(this);">test</button>
-		<button onclick="javascript:test_random(this, 1, 10, 8);">test 1 10 8</button><label for="loop_until_failure"><input id="loop_until_failure" type="checkbox">loop_until_failure<input</label>
-		<button onclick="javascript:test_random(this, 0, 20, 8);">test 0 20 8</button>
-		<button onclick="javascript:test_random(this, 0, 20, 16);">test 0 20 16</button>
-		<button onclick="javascript:test_random(this, 0, 40, 32);">test 0 40 32</button>
-		<button onclick="javascript:test_random(this, 0, 1000000, 1024);">test 0 1000000 1024</button>
-		<button onclick="javascript:test_random(this, 0, 1000000, 2048);">test 0 1000000 2048</button>
-		<button onclick="javascript:test_random(this, 0, 1000000, 4096);">test 0 1000000 4096</button>
-		<button onclick="javascript:test_random(this, 0, 1000000, 8192);">test 0 1000000 8192</button>
-		<button onclick="javascript:test_random(this, 0, 1000000, 16384);">test 0 1000000 16384</button>
+		<button onclick="javascript:test_random(this, this.innerText, 1, 10, 8);">test 1 10 8</button><label for="loop_until_failure"><input id="loop_until_failure" type="checkbox">loop_until_failure<input</label>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 20, 8);">test 0 20 8</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 20, 16);">test 0 20 16</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 40, 32);">test 0 40 32</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 1000000, 1024);">test 0 1000000 1024</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 1000000, 2048);">test 0 1000000 2048</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 1000000, 4096);">test 0 1000000 4096</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 1000000, 8192);">test 0 1000000 8192</button>
+		<button onclick="javascript:test_random(this, this.innerText, 0, 1000000, 16384);">test 0 1000000 16384</button>
 		<h2>Sample Input/Output</h2>
 		<table id="tests">
 			<thead>
